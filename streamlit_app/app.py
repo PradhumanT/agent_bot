@@ -1,52 +1,72 @@
 import streamlit as st
+from dotenv import load_dotenv
+import tempfile
+
 from agent_backend.llm import load_llm
 from agent_backend.memory import get_memory
 from agent_backend.tools import load_basic_tools
-from agent_backend.rag import create_pinecone_retriever_from_pdf
 from agent_backend.agent import build_agent
-import tempfile
+from agent_backend.rag import create_pinecone_retriever_from_pdf
+from langchain.agents import Tool
 
-st.set_page_config(page_title="📚 Smart PDF Chatbot", layout="wide")
-st.title("🤖 Intelligent Agent Chatbot with RAG + Tools")
+load_dotenv()
 
-# Session state for agent + chat history
+st.set_page_config(page_title="🤖 Smart PDF Chatbot", layout="wide")
+st.title("🧠 Intelligent Agent Chatbot with Tools + Optional PDF")
+
+# Initialize session state
+if "llm" not in st.session_state:
+    st.session_state.llm = load_llm()
+if "memory" not in st.session_state:
+    st.session_state.memory = get_memory()
+if "tools" not in st.session_state:
+    st.session_state.tools = load_basic_tools()
 if "agent" not in st.session_state:
-    st.session_state.agent = None
+    st.session_state.agent = build_agent(
+        llm=st.session_state.llm,
+        tools=st.session_state.tools,
+        memory=st.session_state.memory
+    )
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
+if "rag_loaded" not in st.session_state:
+    st.session_state.rag_loaded = False
 
-# File upload
-uploaded_file = st.file_uploader("Upload your PDF file", type=["pdf"])
-if uploaded_file is not None and st.session_state.agent is None:
+# PDF Upload (optional)
+uploaded_file = st.file_uploader("📄 Optionally upload a PDF file", type=["pdf"])
+if uploaded_file and not st.session_state.rag_loaded:
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
         tmp.write(uploaded_file.read())
         pdf_path = tmp.name
 
-    # Build components
-    llm = load_llm()
-    memory = get_memory()
-    tools = load_basic_tools()
-
     retriever, namespace = create_pinecone_retriever_from_pdf(pdf_path)
-    from langchain.agents import Tool
+
     rag_tool = Tool(
         name="Document_Retrieval",
         func=lambda q: retriever.get_relevant_documents(q),
-        description="Use this to answer questions about the uploaded document."
+        description="Use this if the user has uploaded a document and asks about its contents."
     )
-    tools.append(rag_tool)
 
-    # Build agent
-    st.session_state.agent = build_agent(llm, tools, memory)
-    st.success("✅ Agent initialized!")
+    st.session_state.tools.append(rag_tool)
+    st.session_state.agent = build_agent(
+        llm=st.session_state.llm,
+        tools=st.session_state.tools,
+        memory=st.session_state.memory
+    )
+    st.session_state.rag_loaded = True
+    st.success("✅ Document uploaded. You can now ask about it.")
 
-# Chat input
-if st.session_state.agent:
-    user_input = st.chat_input("Ask a question about the document or anything else...")
-    if user_input:
-        with st.spinner("Thinking..."):
+# Chat input + response
+user_input = st.chat_input("Ask me anything...")
+if user_input:
+    with st.spinner("Thinking..."):
+        try:
             response = st.session_state.agent.invoke(user_input)
-            st.session_state.chat_history.append((user_input, response["output"] if isinstance(response, dict) else response))
+            bot_msg = response["output"] if isinstance(response, dict) else response
+        except Exception as e:
+            bot_msg = f"⚠️ Error: {str(e)}"
+
+    st.session_state.chat_history.append((user_input, bot_msg))
 
 # Display chat history
 for user_msg, bot_msg in st.session_state.chat_history:
