@@ -1,10 +1,14 @@
 from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.embeddings import HuggingFaceEmbeddings
+from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_pinecone import PineconeVectorStore
 from pinecone import Pinecone
 import uuid
 import os
+
+from dotenv import load_dotenv
+load_dotenv()
+
 
 def create_pinecone_retriever_from_pdf(pdf_path, index_name="doc-chatbot"):
     pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))

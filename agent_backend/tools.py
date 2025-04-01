@@ -5,6 +5,10 @@ from langchain_community.utilities.wikipedia import WikipediaAPIWrapper
 from langchain_community.utilities import SerpAPIWrapper
 import os
 
+from dotenv import load_dotenv
+load_dotenv()
+
+
 def load_basic_tools():
     wiki = WikipediaQueryRun(api_wrapper=WikipediaAPIWrapper())
     python_tool = PythonREPLTool()
