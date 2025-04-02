@@ -86,15 +86,82 @@ streamlit run streamlit_app/app.py
 
 ---
 
-## ☁️ Deployment
+### 📦 Deployment Summary (EC2 + Streamlit + LangChain)
 
-You can deploy this on AWS EC2 (free-tier friendly) with:
+This project was successfully deployed to an AWS EC2 instance using the following setup:
 
-- `tmux` or `pm2` for persistence
-- Nginx or port tunneling (if needed)
-- Copy your `.env` securely via `scp` or `.pem`
+---
 
-📝 [Deployment guide coming soon...]
+### ✅ **Deployment Stack**
+- **Cloud Provider**: AWS EC2 (t2.micro, Ubuntu 22.04)
+- **Frontend**: Streamlit
+- **Backend/Logic**: Python + LangChain + Pinecone + Google Gemini
+- **Virtual Environment**: Conda (`agent_bot`)
+- **Process Manager**: `tmux` to keep app running after SSH disconnect
+
+---
+
+### 🛠️ **Setup Steps**
+
+1. **Launch EC2 instance**
+   - Ubuntu 22.04
+   - Enabled: SSH (22), HTTP (80), HTTPS (443), and custom port (8501)
+   - Allowed public access for port 8501 to serve Streamlit
+
+2. **Install base tools**
+   ```bash
+   sudo apt update && sudo apt install -y git wget curl unzip tmux
+   ```
+
+3. **Install and configure Miniconda**
+   ```bash
+   wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+   bash Miniconda3-latest-Linux-x86_64.sh
+   ```
+
+4. **Create project environment**
+   ```bash
+   conda create -n agent_bot python=3.10 -y
+   conda activate agent_bot
+   ```
+
+5. **Clone repo and configure `.env`**
+   ```bash
+   git clone https://github.com/your-username/agent-chatbot.git
+   cd agent-chatbot
+   nano .env  # Add API keys: GOOGLE_API_KEY, SERPAPI_API_KEY, PINECONE_API_KEY, PINECONE_ENV
+   ```
+
+6. **Install dependencies**
+   ```bash
+   pip install -r requirements.txt --no-cache-dir
+   ```
+
+7. **Run the app**
+   ```bash
+   streamlit run streamlit_app/app.py \
+     --server.address=0.0.0.0 \
+     --server.port=8501 \
+     --server.enableCORS=false \
+     --server.enableXsrfProtection=false
+   ```
+
+8. **Keep it running with tmux**
+   ```bash
+   tmux new -s chatbot
+   # (Inside tmux)
+   conda activate agent_bot
+   streamlit run streamlit_app/app.py --server.address=0.0.0.0 --server.port=8501
+   # Detach: Ctrl+B, then D
+   ```
+
+---
+
+---
+
+---
+
+You're now running a fully deployed, document-aware, agentic LangChain chatbot powered by Streamlit and hosted on AWS EC2 💬🧠⚡
 
 ---
 
