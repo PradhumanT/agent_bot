@@ -20,6 +20,12 @@ streamlit>=1.30.0
 # PDF loading
 pypdf>=3.10.0
 
+#Wikipedia
+Wikipedia
+
+#google-search-result
+google-search-result
+
 # Environment config
 python-dotenv>=1.0.0
 
