@@ -9,7 +9,6 @@ langchain-google-genai>=0.0.8
 langchain-pinecone>=0.0.5
 
 # LLM and embedding
-google-generativeai>=0.3.2
 sentence-transformers>=2.2.2
 
 # Pinecone
@@ -24,6 +23,4 @@ pypdf>=3.10.0
 # Environment config
 python-dotenv>=1.0.0
 
-# Optional - debugging and dev tools
-ipython
-tqdm
+
