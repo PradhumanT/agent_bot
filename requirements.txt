@@ -1,0 +1,29 @@
+# Install local package in editable mode
+-e .
+
+# Core LangChain packages
+langchain>=0.1.14
+langchain-community>=0.0.29
+langchain-experimental>=0.0.50
+langchain-google-genai>=0.0.8
+langchain-pinecone>=0.0.5
+
+# LLM and embedding
+google-generativeai>=0.3.2
+sentence-transformers>=2.2.2
+
+# Pinecone
+pinecone-client>=3.0.0
+
+# Streamlit UI
+streamlit>=1.30.0
+
+# PDF loading
+pypdf>=3.10.0
+
+# Environment config
+python-dotenv>=1.0.0
+
+# Optional - debugging and dev tools
+ipython
+tqdm
